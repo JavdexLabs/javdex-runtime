@@ -38,7 +38,7 @@ const reference = spawnSync('gh', ['api', '/repos/' + repository + '/git/ref/tag
 if (reference.status === 0) {
   const object = JSON.parse(reference.stdout).object
   assert.equal(object.type, 'commit'); assert.equal(object.sha, commit, 'Tag changed before publication')
-} else assert.equal(JSON.parse(reference.stdout || '{}').status, 404, 'Unexpected tag query failure')
+} else assert.equal(Number(JSON.parse(reference.stdout || '{}').status), 404, 'Unexpected tag query failure')
 gh(['release', 'edit', recipe.release, '--repo', repository, '--draft=false', '--latest=false'])
 const published = json('releases/' + draft.id)
 assert.equal(published.draft, false); assert.equal(published.immutable, true)
