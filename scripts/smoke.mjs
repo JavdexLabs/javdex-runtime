@@ -5,6 +5,7 @@ import path from 'node:path'
 import { execFile } from 'node:child_process'
 import { promisify } from 'node:util'
 import { hashFile, recipe } from './runtime.mjs'
+import { smokeArgs } from './smoke-plan.mjs'
 
 const execute = promisify(execFile)
 assert.equal(process.platform, 'win32', 'Run the native smoke on Windows')
@@ -36,8 +37,7 @@ wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22)
 wav.writeUInt32LE(16000, 24); wav.writeUInt32LE(32000, 28); wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34)
 wav.write('data', 36); wav.writeUInt32LE(samples * 2, 40)
 for (let index = 0; index < samples; index++) wav.writeInt16LE(Math.round(200 * Math.sin(index * Math.PI / 40)), 44 + index * 2)
-const input = path.join(scratch, 'probe.wav')
-await fs.writeFile(input, wav)
+await fs.writeFile(path.join(scratch, 'probe.wav'), wav)
 // The pinned upstream archive also contains a real speech fixture for the VAD path.
 // It stays in the CI scratch directory, never in the distributed runtime.
 const sourceArchive = path.join(root, 'out/ai-runtime-build/windows-vulkan-tools/sources', recipe.source.filename)
@@ -63,17 +63,14 @@ wav.copy(voiced, 0, 0, 44); pcm.copy(voiced, 44)
 voiced.writeUInt32LE(voiced.length - 8, 4); voiced.writeUInt32LE(pcm.length, 40)
 await fs.writeFile(path.join(scratch, 'speech-short.wav'), voiced)
 for (const vad of [false, true]) {
-  const output = path.join(scratch, vad ? 'with-vad' : 'without-vad')
-  const args = ['-m', path.join(scratch, 'kotoba.bin'), '-f', vad ? path.join(scratch, 'speech-short.wav') : input,
-    '-l', 'ja', '-t', '2', '-mc', '0', '-ojf', '-of', output, '--no-gpu']
-  if (vad) args.push('--vad', '--vad-model', path.join(scratch, 'vad.bin'))
+  const { args, output } = smokeArgs(scratch, vad)
   await execute(executable, args, { cwd: scratch, env, timeout: 180000, maxBuffer: 4 * 2 ** 20, windowsHide: true })
   const json = JSON.parse(await fs.readFile(output + '.json', 'utf8'))
   assert.ok(Array.isArray(json.transcription), 'Expected full transcription JSON')
 }
 await fs.writeFile(path.join(root, 'out/smoke.json'), JSON.stringify({
   cli: 'passed', kotoba: 'passed', vad: 'passed', gpu: 'not-tested',
-  scope: 'Native Windows CLI, actual pinned Kotoba/VAD, synthetic local audio, forced CPU; no physical GPU acceptance'
+  scope: 'Native Windows CLI, actual pinned Kotoba/VAD, <=3-second synthetic/pinned speech fixtures with 256-position encoder window, forced CPU; no physical GPU acceptance'
 }, null, 2) + '\n')
 console.log('Native CLI and pinned Kotoba/VAD smoke passed; physical GPU inference NOT tested.')
 await fs.rm(scratch, { recursive: true, force: true })
