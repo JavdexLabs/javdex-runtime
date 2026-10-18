@@ -28,4 +28,5 @@ Javdex 的原生运行库与辅助工具发行仓库。统一维护构建配方�
 - Windows x64 与 Visual Studio C++ 工具：`npm run build:whisper`。
 - 原生兼容检查：`node scripts/smoke.mjs`，会取得固定测试模型，但不将模型打包。
 - CI 打包：`npm run package:whisper`，要求实际 CI 源码与 run 身份。
-- 手动触发 `Build and publish Whisper Vulkan`；`publish=false` 只构建，`publish=true` 在检查通过后发布。仓库必须先启用 immutable releases，同名已公开版本和标签一律拒绝。
+- 手动触发 `Build and publish Whisper Vulkan`；`publish=false` 只构建，`publish=true` 在检查通过后准备 Draft。同名已有 Release 或标签一律拒绝。
+- 全部 CI 成功后，由维护者用已有 `gh` 登录执行 `node scripts/finalize.mjs <完整源码 SHA> <实际 run ID>`；脚本确认不可变设置、CI、Draft 来源与附件身份后才公开。CI 不持有管理权限 PAT，也不绕过不可变门禁。

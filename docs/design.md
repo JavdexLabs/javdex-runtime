@@ -138,7 +138,7 @@ Javdex 源码固定记录运行库的 Release 标签、附件 URL、实际压缩
 
 GitHub 的不可变发行会锁定关联标签和附件，且建议先准备 Draft 再公开。本仓库已启用该设置，发布脚本仍会在每次发布前重新确认。参考 [Immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases)。
 
-构建任务默认只读；只有最终发布任务取得必要写权限。第三方 Actions 固定到提交，不在持有发布权限的任务中执行未经审核的 PR 代码。需要构建来源证明时采用 GitHub 提供的机制，见 [Using artifact attestations](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations)。不承诺此类证明可以替代恶意代码审查或实际运行检查。
+构建任务默认只读；只有准备 Draft 的任务取得内容写权限。读取不可变设置需要管理权限，因此 CI 仅准备已检查的 Draft，维护者用已有身份运行 `scripts/finalize.mjs`，重新确认设置、实际 CI、源码和附件身份后才公开，不向 CI 添加管理权限 PAT。第三方 Actions 固定到提交，不在持有发布权限的任务中执行未经审核的 PR 代码。需要构建来源证明时采用 GitHub 提供的机制，见 [Using artifact attestations](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations)。不承诺此类证明可以替代恶意代码审查或实际运行检查。
 
 ## Javdex 接入
 

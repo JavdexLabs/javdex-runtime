@@ -44,9 +44,27 @@ const sourceArchive = path.join(root, 'out/ai-runtime-build/windows-vulkan-tools
 assert.equal(await hashFile(sourceArchive), recipe.source.sha256)
 await execute('tar.exe', ['-xf', sourceArchive, '-C', scratch, '--strip-components=2',
   'whisper.cpp-' + recipe.upstreamCommit + '/samples/jfk.wav'], { cwd: scratch, env, timeout: 30000, windowsHide: true })
+const speech = await fs.readFile(path.join(scratch, 'jfk.wav'))
+assert.equal(speech.toString('ascii', 0, 4), 'RIFF'); assert.equal(speech.toString('ascii', 8, 12), 'WAVE')
+let pcm, format
+for (let offset = 12; offset + 8 <= speech.length;) {
+  const length = speech.readUInt32LE(offset + 4), start = offset + 8
+  assert.ok(start + length <= speech.length, 'Invalid fixed speech fixture')
+  const id = speech.toString('ascii', offset, offset + 4)
+  if (id === 'fmt ') format = speech.subarray(start, start + length)
+  if (id === 'data') pcm = speech.subarray(start, start + Math.min(length, 16000 * 2 * 3))
+  offset = start + length + (length % 2)
+}
+assert.ok(format && pcm && pcm.length > 0)
+assert.equal(format.readUInt16LE(0), 1); assert.equal(format.readUInt16LE(2), 1)
+assert.equal(format.readUInt32LE(4), 16000); assert.equal(format.readUInt16LE(14), 16)
+const voiced = Buffer.alloc(44 + pcm.length)
+wav.copy(voiced, 0, 0, 44); pcm.copy(voiced, 44)
+voiced.writeUInt32LE(voiced.length - 8, 4); voiced.writeUInt32LE(pcm.length, 40)
+await fs.writeFile(path.join(scratch, 'speech-short.wav'), voiced)
 for (const vad of [false, true]) {
   const output = path.join(scratch, vad ? 'with-vad' : 'without-vad')
-  const args = ['-m', path.join(scratch, 'kotoba.bin'), '-f', vad ? path.join(scratch, 'jfk.wav') : input,
+  const args = ['-m', path.join(scratch, 'kotoba.bin'), '-f', vad ? path.join(scratch, 'speech-short.wav') : input,
     '-l', 'ja', '-t', '2', '-mc', '0', '-ojf', '-of', output, '--no-gpu']
   if (vad) args.push('--vad', '--vad-model', path.join(scratch, 'vad.bin'))
   await execute(executable, args, { cwd: scratch, env, timeout: 180000, maxBuffer: 4 * 2 ** 20, windowsHide: true })

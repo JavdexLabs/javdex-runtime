@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { execFileSync } from 'node:child_process'
-import { preflightRelease, repository } from './publication.mjs'
+import { preflightRelease, preflightDraft, repository } from './publication.mjs'
 import { recipe, hashFile } from './runtime.mjs'
 
 const token = process.env.GITHUB_TOKEN
@@ -15,9 +15,11 @@ async function api(endpoint, options = {}) {
   })
   return { status: response.status, body: await response.json() }
 }
-await preflightRelease(api)
+const command = process.argv[2]
+if (command === 'stage') await preflightDraft(api)
+else await preflightRelease(api)
 if (process.argv[2] === 'preflight') { console.log('Fixed release absent; immutable releases enabled.'); process.exit(0) }
-assert.equal(process.argv[2], 'publish')
+assert.equal(command, 'stage', 'CI may only stage a checked draft; an owner finalizes publication')
 assert.ok(token, 'Publishing requires the CI repository token')
 assert.equal(process.env.GITHUB_REPOSITORY, repository)
 assert.equal(process.env.GITHUB_EVENT_NAME, 'workflow_dispatch')
@@ -55,6 +57,5 @@ for (const name of [artifact.name, 'release.json', 'SHA256SUMS.txt']) {
 const listing = await api('/repos/' + repository + '/releases/' + draft.body.id + '/assets')
 assert.equal(listing.status, 200)
 assert.deepEqual(listing.body.map(asset => asset.name).sort(), [artifact.name, 'release.json', 'SHA256SUMS.txt'].sort())
-const result = await api('/repos/' + repository + '/releases/' + draft.body.id, { method: 'PATCH', body: JSON.stringify({ draft: false, make_latest: 'false' }) })
-assert.equal(result.status, 200); assert.equal(result.body.immutable, true, 'Release must be immutable')
-console.log('Published fixed runtime:', result.body.html_url)
+console.log('Prepared checked draft:', draft.body.html_url, 'id=' + draft.body.id)
+console.log('An owner must run scripts/finalize.mjs with the completed CI run and exact source SHA.')
