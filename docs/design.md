@@ -2,7 +2,7 @@
 
 Javdex Runtime 统一交付 Javdex 使用的原生运行库和辅助工具。构建与发布集中到本仓库，下载、准备计划、安装和任务执行仍由 Javdex 管理。首期只迁出 Windows x64 的 Whisper Vulkan 运行库，保留以后增加其他原生扩展的空间，不一次性搬迁所有依赖。
 
-本方案于 2026 年 10 月 18 日建立。仓库创建与设计文档是本次交付；构建实现、运行库发布和 Javdex 接入尚未开始。
+本方案于 2026 年 10 月 18 日建立。首期构建、原生烟测、打包与不可变发布脚本已实现；可下载运行库以实际 Release 为准，Javdex 按需下载接入仍在其单独任务中执行。
 
 ## 职责分工
 
@@ -31,7 +31,7 @@ Javdex Runtime 统一交付 Javdex 使用的原生运行库和辅助工具。构
 
 ## 目录安排
 
-以下是后续实施时的目录规划；当前尚未创建这些实现文件。
+目录按实际运行库逐步实施；清单目前由可执行校验器验证，独立 JSON Schema 和其他目标按实际需要增加。
 
 ```text
 javdex-runtime/
@@ -136,7 +136,7 @@ Javdex 源码固定记录运行库的 Release 标签、附件 URL、实际压缩
 3. 创建 Draft Release，上传同一构建的全部材料，核对附件集合。
 4. 全部通过并确认仓库已启用 GitHub Release immutability 后，再一次公开；公开后不追加或替换附件。
 
-GitHub 的不可变发行会锁定关联标签和附件，且建议先准备 Draft 再公开。该能力属于实施阶段要配置的仓库设置，本次未配置或验证此设置。参考 [Immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases)。
+GitHub 的不可变发行会锁定关联标签和附件，且建议先准备 Draft 再公开。本仓库已启用该设置，发布脚本仍会在每次发布前重新确认。参考 [Immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases)。
 
 构建任务默认只读；只有最终发布任务取得必要写权限。第三方 Actions 固定到提交，不在持有发布权限的任务中执行未经审核的 PR 代码。需要构建来源证明时采用 GitHub 提供的机制，见 [Using artifact attestations](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations)。不承诺此类证明可以替代恶意代码审查或实际运行检查。
 
@@ -158,4 +158,4 @@ GitHub 的不可变发行会锁定关联标签和附件，且建议先准备 Dra
 
 先完成 Windows Whisper Vulkan 的单一闭环，再考虑 macOS AI 工具、其他文本引擎变体或设备探测工具。跨平台迁移、签名、公证和重新分发权利分别评估，不由 Windows 首期自动授权。
 
-实施分三步：先完成独立构建与包协议，再发布首个固定运行库，最后通过独立的 Javdex 变更接入并验证主包体积变化。当前停止在方案阶段，不创建工作流、不下载产物、不发布运行库，也不对 Javdex 主仓库产生提交。
+实施分三步：先完成独立构建与包协议，再发布首个固定运行库，最后通过独立的 Javdex 变更接入并验证主包体积变化。维护者已授权本次实施和首个运行库发布；Javdex 公开版本的任何变更在消费方仓库中单独控制，不由本仓库发布脚本执行。

@@ -1,0 +1,61 @@
+name: Build and publish Whisper Vulkan
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish immutable whisper-b5130-r1 after native checks
+        required: true
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: whisper-b5130-r1
+  cancel-in-progress: false
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+      - run: npm test
+  build:
+    needs: contracts
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+      - run: npm run build:whisper
+      - name: Native CLI and actual pinned Kotoba and VAD smoke
+        run: node scripts/smoke.mjs
+      - run: npm run package:whisper
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: whisper-b5130-r1-win32-x64-vulkan
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 30
+  publish:
+    if: inputs.publish
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: whisper-b5130-r1-win32-x64-vulkan
+          path: dist
+      - name: Publish fixed immutable runtime
+        run: node scripts/publish.mjs publish
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

@@ -1,0 +1,7 @@
+Javdex Runtime
+Copyright (c) 2026 JavdexLabs
+SPDX-License-Identifier: GPL-3.0-or-later
+
+Repository-owned build and distribution code is licensed under GPL-3.0-or-later.
+The Windows Vulkan builder is derived from Javdex, preserving its original license.
+Third-party engine binaries and materials retain their own accompanying licenses.
