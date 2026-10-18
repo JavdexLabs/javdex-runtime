@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { recipe } from './runtime.mjs'
-import { repository } from './publication.mjs'
+import { repository, selectRuntimeDraft } from './publication.mjs'
 
 const [commit, runId] = process.argv.slice(2)
 assert.match(commit || '', /^[a-f0-9]{40}$/)
@@ -14,7 +14,7 @@ const run = JSON.parse(gh(['run', 'view', runId, '--repo', repository, '--json',
 assert.equal(run.headSha, commit); assert.equal(run.status, 'completed'); assert.equal(run.conclusion, 'success')
 assert.ok(run.jobs.length >= 3 && run.jobs.every(job => job.conclusion === 'success'))
 assert.equal(json('immutable-releases').enabled, true, 'Enable immutable releases before publishing')
-const draft = json('releases/tags/' + recipe.release)
+const draft = selectRuntimeDraft(json('releases?per_page=100'), commit)
 assert.equal(draft.draft, true); assert.equal(draft.target_commitish, commit)
 const names = [recipe.release + '-win32-x64-vulkan.zip', 'release.json', 'SHA256SUMS.txt']
 assert.deepEqual(draft.assets.map(asset => asset.name).sort(), [...names].sort())
@@ -39,7 +39,7 @@ if (reference.status === 0) {
   const object = JSON.parse(reference.stdout).object
   assert.equal(object.type, 'commit'); assert.equal(object.sha, commit, 'Tag changed before publication')
 } else assert.equal(Number(JSON.parse(reference.stdout || '{}').status), 404, 'Unexpected tag query failure')
-gh(['release', 'edit', recipe.release, '--repo', repository, '--draft=false', '--latest=false'])
+gh(['api', '/repos/' + repository + '/releases/' + draft.id, '--method', 'PATCH', '-F', 'draft=false', '-f', 'make_latest=false'])
 const published = json('releases/' + draft.id)
 assert.equal(published.draft, false); assert.equal(published.immutable, true)
 assert.equal(published.target_commitish, commit)
