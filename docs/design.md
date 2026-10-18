@@ -134,9 +134,9 @@ Javdex 源码固定记录运行库的 Release 标签、附件 URL、实际压缩
 1. 核对目标清单、源码提交、标签与附件均没有已公开的同身份版本。
 2. 构建、检查并生成归档、实际清单、摘要和来源材料。
 3. 创建 Draft Release，上传同一构建的全部材料，核对附件集合。
-4. 全部通过后一次公开，启用并确认 GitHub Release immutability；公开后不追加或替换附件。
+4. 全部通过并确认仓库已启用 GitHub Release immutability 后，再一次公开；公开后不追加或替换附件。
 
-GitHub 的不可变发行会锁定关联标签和附件，且建议先准备 Draft 再公开。该能力属于实施阶段要配置的仓库设置，当前未启用或验证。参考 [Immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases)。
+GitHub 的不可变发行会锁定关联标签和附件，且建议先准备 Draft 再公开。该能力属于实施阶段要配置的仓库设置，本次未配置或验证此设置。参考 [Immutable releases](https://docs.github.com/en/code-security/concepts/supply-chain-security/immutable-releases)。
 
 构建任务默认只读；只有最终发布任务取得必要写权限。第三方 Actions 固定到提交，不在持有发布权限的任务中执行未经审核的 PR 代码。需要构建来源证明时采用 GitHub 提供的机制，见 [Using artifact attestations](https://docs.github.com/en/actions/how-tos/secure-your-work/use-artifact-attestations)。不承诺此类证明可以替代恶意代码审查或实际运行检查。
 
