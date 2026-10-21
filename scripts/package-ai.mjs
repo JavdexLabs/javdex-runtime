@@ -32,12 +32,13 @@ for (const vad of [false, true]) {
   run(path.join(bundle, 'whisper/whisper-cli'), ['-m', path.join(scratch, 'kotoba.bin'), '-f', path.join(scratch, 'speech.wav'), '-l', 'ja', '-t', '2', '-mc', '0', '-ac', '256', '-ojf', '-of', output, '--no-gpu', ...(vad ? ['--vad', '--vad-model', path.join(scratch, 'vad.bin')] : [])])
   assert.ok(Array.isArray(JSON.parse(await fs.readFile(output + '.json', 'utf8')).transcription))
 }
+const toolchain = { clang: execFileSync('clang', ['--version'], { encoding: 'utf8' }), cmake: execFileSync('cmake', ['--version'], { encoding: 'utf8' }), sdk: execFileSync('xcrun', ['--show-sdk-version'], { encoding: 'utf8' }).trim(), system: execFileSync('sw_vers', ['-productVersion'], { encoding: 'utf8' }).trim() }
 const artifacts = []
 for (const id of ['whisper', 'ffmpeg']) {
   const release = id === 'whisper' ? 'whisper-b5130-r2' : 'ffmpeg-8.1.3-r1'
   const prefix = `${release}-${target}`, stage = path.resolve('out/package', prefix)
   await fs.mkdir(path.dirname(stage), { recursive: true }); await fs.cp(path.join(bundle, id), stage, { recursive: true, errorOnExist: true, force: false })
-  const provenance = { repository: 'JavdexLabs/javdex-runtime', commit: process.env.GITHUB_SHA, runId: Number(process.env.GITHUB_RUN_ID), sources: aiRuntimeSources, checks: { cli: 'passed', ...(id === 'whisper' ? { kotoba: 'passed', vad: 'passed', gpu: 'not-tested' } : { audio: 'passed' }) } }
+  const provenance = { repository: 'JavdexLabs/javdex-runtime', commit: process.env.GITHUB_SHA, runId: Number(process.env.GITHUB_RUN_ID), toolchain, sources: aiRuntimeSources, checks: { cli: 'passed', ...(id === 'whisper' ? { kotoba: 'passed', vad: 'passed', gpu: 'not-tested' } : { audio: 'passed' }) } }
   await fs.writeFile(path.join(stage, 'SOURCE.json'), JSON.stringify(provenance, null, 2) + '\n')
   const file = path.join(dist, prefix + '.tar.gz'); run('tar', ['-czf', file, '-C', path.dirname(stage), prefix])
   artifacts.push(await descriptor(file, { release, id, target, backend: id === 'whisper' ? 'metal' : 'common', archivePrefix: prefix, source: aiRuntimeSources[id].url, checks: provenance.checks }))

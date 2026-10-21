@@ -15,7 +15,23 @@ const posix = s => s.replaceAll('\\', '/').replace(/^([A-Za-z]):\//, (_, d) => '
 function run(command, args, cwd = work, capture = false) {
   const windows = process.platform === 'win32'
   return execFileSync(windows ? 'bash.exe' : command, windows ? ['--noprofile', '--norc', '-c', [command, ...args].map(s => quote(posix(s))).join(' ')] : args,
-    { cwd, stdio: capture ? 'pipe' : 'inherit', encoding: capture ? 'utf8' : undefined, timeout: 1200000 })
+    { cwd, maxBuffer: 16 * 1024 ** 2, stdio: capture ? 'pipe' : 'inherit', encoding: capture ? 'utf8' : undefined, timeout: 1200000 })
+}
+let windowsToolchain
+if (process.platform === 'win32') {
+  const packages = run('pacman', ['-Qq'], root, true).trim().split(/\r?\n/).filter(name => /^mingw-w64-ucrt-x86_64-(gcc(-libs)?|crt(-git)?|headers(-git)?|winpthreads(-git)?|libwinpthread(-git)?)$/.test(name))
+  assert.ok(packages.some(name => /-gcc$/.test(name)) && packages.some(name => /-crt(?:-git)?$/.test(name)), 'Missing compiler/runtime package provenance')
+  windowsToolchain = run('pacman', ['-Q', ...packages], root, true)
+  const listings = run('pacman', ['-Ql', ...packages], root, true).split(/\r?\n/)
+  const notices = []
+  for (const line of listings) {
+    const match = /^([^ ]+) (\/ucrt64\/share\/licenses\/.+[^/])$/.exec(line)
+    if (!match) continue
+    const filename = run('cygpath', ['-w', match[2]], root, true).trim()
+    if ((await fs.stat(filename)).isFile()) notices.push(`${match[1]}: ${match[2]}\n\n${await fs.readFile(filename, 'utf8')}`)
+  }
+  assert.ok(notices.length > 0, 'Missing compiler/MinGW runtime license materials')
+  await fs.writeFile(path.join(stage, 'LICENSE-TOOLCHAIN.txt'), 'Compiler and MinGW runtime notices; FFmpeg retains its own license.\n\n' + notices.join('\n\n'))
 }
 run('tar', ['-xf', source, '-C', work, '--strip-components=1'])
 const configure = ['--disable-autodetect', '--disable-gpl', '--disable-nonfree', '--disable-shared', '--enable-static', '--disable-doc', '--disable-debug', '--disable-x86asm', '--disable-avdevice', '--disable-encoders', '--enable-encoder=pcm_s16le', '--disable-muxers', '--enable-muxer=wav', ...(process.platform === 'win32' ? ['--target-os=mingw32', '--arch=x86_64', '--extra-ldflags=-static', '--enable-schannel'] : [])]
@@ -38,7 +54,7 @@ run(path.join(bin, 'ffmpeg' + ext), ['-nostdin', '-v', 'error', '-i', input, '-a
 const streams = JSON.parse(run(path.join(bin, 'ffprobe' + ext), ['-v', 'error', '-show_streams', '-of', 'json', output], root, true)).streams
 assert.equal(streams[0].codec_name, 'pcm_s16le'); assert.equal(streams[0].sample_rate, '16000')
 await fs.copyFile(path.join(work, 'COPYING.LGPLv2.1'), path.join(stage, 'COPYING.LGPLv2.1'))
-await fs.writeFile(path.join(stage, 'SOURCE.json'), JSON.stringify({ repository: 'JavdexLabs/javdex-runtime', commit: process.env.GITHUB_SHA, runId: Number(process.env.GITHUB_RUN_ID), source: lock, configure, compiler: run(process.platform === 'win32' ? 'gcc' : 'cc', ['--version'], work, true), checks: { cli: 'passed', audio: 'passed' } }, null, 2) + '\n')
+await fs.writeFile(path.join(stage, 'SOURCE.json'), JSON.stringify({ repository: 'JavdexLabs/javdex-runtime', commit: process.env.GITHUB_SHA, runId: Number(process.env.GITHUB_RUN_ID), source: lock, configure, compiler: run(process.platform === 'win32' ? 'gcc' : 'cc', ['--version'], work, true), ...(windowsToolchain ? { windowsToolchain } : {}), checks: { cli: 'passed', audio: 'passed' } }, null, 2) + '\n')
 const file = path.resolve('dist', prefix + (process.platform === 'win32' ? '.zip' : '.tar.gz'))
 if (process.platform === 'win32') execFileSync('powershell.exe', ['-NoProfile', '-Command', 'Compress-Archive -Path $env:JAVDEX_STAGE -DestinationPath $env:JAVDEX_ZIP'], { env: { ...process.env, JAVDEX_STAGE: stage, JAVDEX_ZIP: file } })
 else execFileSync('tar', ['-czf', file, '-C', path.dirname(stage), prefix])
