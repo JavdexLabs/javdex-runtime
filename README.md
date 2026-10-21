@@ -30,3 +30,19 @@ Javdex 的原生运行库与辅助工具发行仓库。统一维护构建配方�
 - CI 打包：`npm run package:whisper`，要求实际 CI 源码与 run 身份。
 - 手动触发 `Build and publish Whisper Vulkan`；`publish=false` 只构建，`publish=true` 在检查通过后准备 Draft。同名已有 Release 或标签一律拒绝。
 - 全部 CI 成功后，由维护者用已有 `gh` 登录执行 `node scripts/finalize.mjs <完整源码 SHA> <实际 run ID>`；脚本确认不可变设置、CI、Draft 来源与附件身份后才公开。CI 不持有管理权限 PAT，也不绕过不可变门禁。
+
+## 固定依赖留存
+
+`Preserve fixed Javdex dependencies` 工作流按固定锁定输入准备五个独立 Draft：
+
+- `ffmpeg-8.1.3-r1`：五个平台的自建音频提取工具及完整对应源码配方；禁用 GPL/nonfree/外部自动探测，仅输出 PCM/WAV。
+- `whisper-b5130-r2`：CPU/CUDA 原始上游包，以及 macOS x64/arm64 原生构建。既有 Vulkan r1 不变。
+- `llama-b11435-r1`：各平台 CPU 与 Windows CUDA/Vulkan 原始包。
+- `silero-v6.2-r1`：固定小型 VAD 辅助模型与许可，不包含其他模型权重。
+- `playback-0.41.0-9.0.2-r1`：从固定 Javdex 0.9.0 原安装产物提取的四目标运行库，加上原始对应源码总包。不是当前 Wayland 开发构建。
+
+工作流先执行合同测试，再验证镜像字节和原生新构建。macOS Whisper 使用真实固定 Kotoba/VAD 的 CPU 烟测；GPU 推理不记为通过。macOS CLI 采用 ad-hoc 签名，不宣称 Developer ID 或公证。历史播放器仅归档，不新增硬件验收结论。
+
+CI 只准备 Draft；维护者在该次完整源码检出执行 `node scripts/publish-distributions.mjs finalize <run ID>`，确认完整成功 CI、准确附件、来源及仓库不可变设置后公开。发布不覆盖，不使用 `latest`。不配置 Release 自动清理；结束支持与删除由维护者控制，应先检查消费版本引用。Actions 中间产物的 30 天保留期不是 Release 的有效期。
+
+来源锁位于 `runtimes/distributions/`。原始上游包不重新打包，保留既有安装摘要身份；CUDA 另附 NVIDIA 条款，不能将引擎 MIT 许可用于 NVIDIA 组件。新 FFmpeg 包的构建身份不同，必须使用新目录及摘要。播放器归档包含签名后的真实二进制，不能与源码包中的 pre-sign 输入摘要混用。

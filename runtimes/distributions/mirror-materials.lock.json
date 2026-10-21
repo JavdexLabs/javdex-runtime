@@ -1,0 +1,52 @@
+[
+  {
+    "release": "llama-b11435-r1",
+    "id": "sources",
+    "target": "sources",
+    "backend": "none",
+    "name": "llama-b11435-upstream.tar.gz",
+    "url": "https://codeload.github.com/ggml-org/llama.cpp/tar.gz/43fe9c64281ef735046adc025e9e7559a1f659a5",
+    "bytes": 37896666,
+    "sha256": "694668b06071d1d142d4e39f42cae657b748d0a226d639bdb2454fb84ae60af0"
+  },
+  {
+    "release": "whisper-b5130-r2",
+    "id": "sources",
+    "target": "sources",
+    "backend": "none",
+    "name": "whisper-b5130-upstream.tar.gz",
+    "url": "https://codeload.github.com/ggml-org/whisper.cpp/tar.gz/927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "bytes": 9357755,
+    "sha256": "41b664fee09e79176ac277b5237debec34f8d74af3c7d71f333f1ec67989ecde"
+  },
+  {
+    "release": "llama-b11435-r1",
+    "id": "license",
+    "target": "sources",
+    "backend": "none",
+    "name": "NVIDIA-CUDA-EULA.html",
+    "url": "https://docs.nvidia.com/cuda/eula/index.html",
+    "bytes": 103131,
+    "sha256": "f676e53acbf3f714e69e64b7e4cc6fe8b4698b7c8c4ef9577542beb7ae68ca41"
+  },
+  {
+    "release": "whisper-b5130-r2",
+    "id": "license",
+    "target": "sources",
+    "backend": "none",
+    "name": "NVIDIA-CUDA-EULA.html",
+    "url": "https://docs.nvidia.com/cuda/eula/index.html",
+    "bytes": 103131,
+    "sha256": "f676e53acbf3f714e69e64b7e4cc6fe8b4698b7c8c4ef9577542beb7ae68ca41"
+  },
+  {
+    "release": "silero-v6.2-r1",
+    "id": "license",
+    "target": "sources",
+    "backend": "none",
+    "name": "Silero-LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/snakers4/silero-vad/1e261b036686cd0017d500ee96acd1c4ba572a9d/LICENSE",
+    "bytes": 1075,
+    "sha256": "2e63e9a38b6e8fc0c7bc37ce174caca1862870856c6daf5697cfb785e925520b"
+  }
+]
