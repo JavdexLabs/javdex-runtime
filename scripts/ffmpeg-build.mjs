@@ -10,7 +10,7 @@ assert.ok(['win32-x64', 'linux-x64', 'linux-arm64'].includes(target))
 const source = await downloadPinned({ ...lock, name: lock.filename }, path.resolve('out/ffmpeg-sources'))
 const work = path.resolve('out/ffmpeg-build'), prefix = `${release}-${target}`, stage = path.resolve('out/package', prefix)
 await fs.mkdir(work, { recursive: true }); await fs.mkdir(stage, { recursive: true }); await fs.mkdir('dist', { recursive: true })
-execFileSync('tar', ['-xf', source, '-C', work, '--strip-components=1'])
+execFileSync('tar', [...(process.platform === 'win32' ? ['--force-local'] : []), '-xf', source, '-C', work, '--strip-components=1'])
 const quote = s => "'" + s.replaceAll("'", "'\\''") + "'"
 const posix = s => s.replaceAll('\\', '/').replace(/^([A-Za-z]):\//, (_, d) => '/' + d.toLowerCase() + '/')
 function run(command, args, cwd = work, capture = false) {
@@ -48,6 +48,6 @@ for (const name of ['scripts/ffmpeg-build.mjs', 'scripts/distribution.mjs', 'run
   await fs.mkdir(path.dirname(path.join(materials, name)), { recursive: true }); await fs.copyFile(name, path.join(materials, name))
 }
 await fs.cp('out/ffmpeg-sources', path.join(materials, 'out/ffmpeg-sources'), { recursive: true })
-const src = path.resolve('dist', `${release}-${target}-sources.tar.gz`); execFileSync('tar', ['-czf', src, '-C', materials, '.'])
+const src = path.resolve('dist', `${release}-${target}-sources.tar.gz`); execFileSync('tar', [...(process.platform === 'win32' ? ['--force-local'] : []), '-czf', src, '-C', materials, '.'])
 artifacts.push(await descriptor(src, { release, id: 'sources', target, checks: { sources: 'archived' } }))
 await fs.writeFile(`dist/ffmpeg-${target}.json`, JSON.stringify(artifacts, null, 2) + '\n')
