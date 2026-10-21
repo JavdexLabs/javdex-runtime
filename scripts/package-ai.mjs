@@ -11,7 +11,10 @@ await fs.mkdir(dist, { recursive: true })
 assert.equal(process.platform, 'darwin')
 const bundle = await buildMacAiRuntime()
 for (const [id, names] of Object.entries({ whisper: ['whisper-cli'], ffmpeg: ['ffmpeg', 'ffprobe'] })) {
-  for (const name of names) run('codesign', ['--force', '--sign', '-', '--timestamp=none', path.join(bundle, id, name)])
+  for (const name of names) {
+    run('codesign', ['--force', '--sign', '-', '--timestamp=none', path.join(bundle, id, name)])
+    run('codesign', ['--verify', '--strict', path.join(bundle, id, name)])
+  }
 }
 await refreshAiBundleInventory(bundle, process.arch)
 // Native audio conversion and actual fixed Kotoba/VAD CPU inference, not GPU evidence.

@@ -7,6 +7,11 @@ import { repository, validateArtifacts, hashFile } from './distribution.mjs'
 const releases = ['ffmpeg-8.1.3-r1', 'whisper-b5130-r2', 'llama-b11435-r1', 'silero-v6.2-r1', 'playback-0.41.0-9.0.2-r1']
 const gh = args => execFileSync('gh', args, { encoding: 'utf8', maxBuffer: 8 * 1024 ** 2 })
 const api = endpoint => JSON.parse(gh(['api', '/repos/' + repository + '/' + endpoint]))
+const draftByTag = tag => {
+  const listing = api('releases?per_page=100'); assert.ok(listing.length < 100)
+  const matches = listing.filter(r => r.tag_name === tag); assert.equal(matches.length, 1)
+  return matches[0]
+}
 const mode = process.argv[2], commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim()
 assert.match(commit, /^[a-f0-9]{40}$/)
 if (mode === 'stage') {
@@ -33,7 +38,7 @@ if (mode === 'stage') {
     await fs.writeFile(body, `${tag}\n\nFixed distribution for Javdex. Source: ${commit}\nCI: https://github.com/${repository}/actions/runs/${runId}\n\nSee release.json for per-artifact source, digests and verification scope. Original mirrors are byte-identical; native execution is not re-tested for mirrors or historical playback archives. New FFmpeg builds passed native CLI and WAV conversion; macOS Whisper passed native Kotoba/VAD CPU smoke. GPU inference: NOT TESTED. macOS CLI signing is ad-hoc, not Developer ID notarization.\n\nThird-party licenses remain their own. CUDA binaries retain NVIDIA terms; engine MIT licensing does not cover NVIDIA components. Models other than the small VAD auxiliary are not distributed. No automatic cleanup.\n`)
     gh(['release', 'create', tag, '--repo', repository, '--target', commit, '--draft', '--title', tag, '--notes-file', body])
     for (const file of [...entries.map(a => path.resolve('dist', a.name)), path.join(output, 'release.json'), path.join(output, 'SHA256SUMS.txt')]) gh(['release', 'upload', tag, file, '--repo', repository])
-    const draft = api(`releases/tags/${tag}`)
+    const draft = draftByTag(tag)
     assert.equal(draft.draft, true); assert.equal(draft.target_commitish, commit)
     assert.deepEqual(draft.assets.map(a => a.name).sort(), [...entries.map(a => a.name), 'release.json', 'SHA256SUMS.txt'].sort())
     for (const a of entries) { const file = draft.assets.find(f => f.name === a.name); assert.equal(file.size, a.bytes); assert.equal(file.digest, 'sha256:' + a.sha256) }
@@ -50,7 +55,7 @@ if (mode === 'stage') {
   // Check all drafts before making any public mutation.
   const drafts = []
   for (const tag of releases) {
-    const draft = api(`releases/tags/${tag}`); assert.equal(draft.draft, true); assert.equal(draft.target_commitish, commit)
+    const draft = draftByTag(tag); assert.equal(draft.draft, true); assert.equal(draft.target_commitish, commit)
     const file = draft.assets.find(a => a.name === 'release.json'); assert.ok(file)
     const manifest = JSON.parse(gh(['api', `/repos/${repository}/releases/assets/${file.id}`, '-H', 'Accept: application/octet-stream']))
     assert.equal(manifest.commit, commit); assert.equal(manifest.runId, Number(runId)); assert.equal(manifest.version, tag); validateArtifacts(manifest.artifacts)
@@ -62,8 +67,10 @@ if (mode === 'stage') {
   for (const draft of drafts) {
     const current = api('releases/' + draft.id); assert.equal(current.draft, true)
     assert.deepEqual(current.assets.map(a => [a.id, a.name, a.size, a.digest]), draft.assets.map(a => [a.id, a.name, a.size, a.digest]))
-    const ref = api('git/ref/tags/' + draft.tag_name); assert.equal(ref.object.type, 'commit'); assert.equal(ref.object.sha, commit)
+    const reference = spawnSync('gh', ['api', `/repos/${repository}/git/ref/tags/${draft.tag_name}`], { encoding: 'utf8' })
+    if (reference.status === 0) { const ref = JSON.parse(reference.stdout); assert.equal(ref.object.type, 'commit'); assert.equal(ref.object.sha, commit) }
+    else assert.equal(JSON.parse(reference.stdout).status, 404)
     gh(['api', `/repos/${repository}/releases/${draft.id}`, '--method', 'PATCH', '-F', 'draft=false', '-f', 'make_latest=false'])
-    assert.equal(api('releases/' + draft.id).immutable, true); console.log('Published immutable:', draft.html_url)
+    assert.equal(api('releases/' + draft.id).immutable, true); assert.equal(api('git/ref/tags/' + draft.tag_name).object.sha, commit); console.log('Published immutable:', draft.html_url)
   }
 }
