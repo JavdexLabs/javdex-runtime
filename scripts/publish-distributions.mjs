@@ -79,6 +79,6 @@ if (mode === 'stage') {
     if (reference.status === 0) { const ref = JSON.parse(reference.stdout); assert.equal(ref.object.type, 'commit'); assert.equal(ref.object.sha, commit) }
     else assert.equal(Number(JSON.parse(reference.stdout).status), 404)
     gh(['api', `/repos/${repository}/releases/${draft.id}`, '--method', 'PATCH', '-F', 'draft=false', '-f', 'make_latest=false'])
-    assert.equal(api('releases/' + draft.id).immutable, true); assert.equal(api('git/ref/tags/' + draft.tag_name).object.sha, commit); console.log('Published immutable:', draft.html_url)
+    assert.equal(api('releases/' + draft.id).immutable, true); assert.equal(api('git/ref/tags/' + draft.tag_name).object.sha, commit); console.log('Published immutable:', `https://github.com/${repository}/releases/tag/${draft.tag_name}`)
   }
 }
