@@ -16,6 +16,12 @@ export async function downloadPinned(asset, directory, fetcher = fetch) {
   await fs.mkdir(directory, { recursive: true })
   const file = path.join(directory, asset.name), partial = file + '.part'
   try { if ((await fs.stat(file)).size === asset.bytes && await hashFile(file) === asset.sha256) return file } catch { /* Download absent cache. */ }
+  const retainedSource = path.resolve('runtimes/distributions/source-cache', asset.name)
+  try {
+    if ((await fs.stat(retainedSource)).size === asset.bytes && await hashFile(retainedSource) === asset.sha256) {
+      await fs.copyFile(retainedSource, partial); await fs.rename(partial, file); return file
+    }
+  } catch (error) { if (error.code !== 'ENOENT') throw error }
   const response = await fetcher(asset.url, { signal: AbortSignal.timeout(600000) })
   assert.ok(response.ok && response.body, `Download failed: ${asset.name} HTTP ${response.status}`)
   const output = await fs.open(partial, 'w'); let bytes = 0

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { createReadStream, createWriteStream } from 'node:fs'
+import { createReadStream } from 'node:fs'
 import fs from 'node:fs/promises'
 import { spawn } from 'node:child_process'
 import os from 'node:os'
 import path from 'node:path'
-import { pipeline } from 'node:stream/promises'
+import { downloadPinned } from './distribution.mjs'
 import { fileURLToPath } from 'node:url'
 
 export const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
@@ -93,20 +93,7 @@ export async function buildMacAiRuntime(root = projectRoot, arch = process.arch)
   for (const source of [aiRuntimeSources.whisper, aiRuntimeSources.ffmpeg]) {
     const filename = path.join(buildRoot, 'sources', source.filename)
     if (await sha256(filename).catch(() => '') === source.sha256) continue
-    const partial = `${filename}.part`
-    const response = await fetch(source.url, { signal: AbortSignal.timeout(180000) })
-    assert.ok(response.ok && response.body, `Could not download pinned AI source: ${source.filename}`)
-    let received = 0
-    await pipeline(response.body, async function* (chunks) {
-      for await (const chunk of chunks) {
-        received += chunk.length
-        assert.ok(received <= source.bytes, 'AI source exceeds pinned size')
-        yield chunk
-      }
-    }, createWriteStream(partial, { mode: 0o600 }))
-    assert.equal(received, source.bytes)
-    assert.equal(await sha256(partial), source.sha256, 'Pinned AI source hash mismatch')
-    await fs.rename(partial, filename)
+    await downloadPinned({ ...source, name: source.filename }, path.join(buildRoot, 'sources'))
   }
   const work = await fs.mkdtemp(path.join(buildRoot, `darwin-${arch}-`))
   const bundle = path.join(work, 'bundle')
