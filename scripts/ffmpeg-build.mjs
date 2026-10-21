@@ -19,7 +19,7 @@ function run(command, args, cwd = work, capture = false) {
 }
 run('tar', ['-xf', source, '-C', work, '--strip-components=1'])
 const configure = ['--disable-autodetect', '--disable-gpl', '--disable-nonfree', '--disable-shared', '--enable-static', '--disable-doc', '--disable-debug', '--disable-x86asm', '--disable-avdevice', '--disable-encoders', '--enable-encoder=pcm_s16le', '--disable-muxers', '--enable-muxer=wav', ...(process.platform === 'win32' ? ['--target-os=mingw32', '--arch=x86_64', '--extra-ldflags=-static', '--enable-schannel'] : [])]
-run('./configure', configure); run('make', ['-j', '4', 'ffmpeg', 'ffprobe'])
+run('./configure', configure); run('make', ['-j', '4', ...(process.platform === 'win32' ? ['ffmpeg.exe', 'ffprobe.exe'] : ['ffmpeg', 'ffprobe'])])
 const bin = process.platform === 'linux' ? path.join(stage, 'bin') : stage
 await fs.mkdir(bin, { recursive: true })
 for (const name of ['ffmpeg', 'ffprobe']) {

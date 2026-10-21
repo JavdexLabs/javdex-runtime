@@ -25,3 +25,13 @@ test('macOS inventory refuses a different target, mutated bytes and missing mand
   await fs.appendFile(path.join(root, 'whisper/whisper-cli'), 'changed'); await assert.rejects(verifyAiBundle(root, 'arm64'))
   await fs.rm(path.join(root, 'ffmpeg/ffprobe')); await assert.rejects(refreshAiBundleInventory(root, 'arm64'))
 })
+
+test('macOS inventory rejects a non-executable CLI on POSIX', { skip: process.platform === 'win32' ? 'POSIX execution bits are unavailable' : false }, async t => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'javdex-mac-mode-')); t.after(() => fs.rm(root, { recursive: true, force: true }))
+  for (const [id, names] of Object.entries({ whisper: ['whisper-cli'], ffmpeg: ['ffmpeg', 'ffprobe'] })) {
+    await fs.mkdir(path.join(root, id)); for (const name of names) await fs.writeFile(path.join(root, id, name), name, { mode: 0o755 })
+  }
+  await refreshAiBundleInventory(root, 'arm64')
+  await fs.chmod(path.join(root, 'whisper/whisper-cli'), 0o644)
+  await assert.rejects(verifyAiBundle(root, 'arm64'), /not executable/)
+})
