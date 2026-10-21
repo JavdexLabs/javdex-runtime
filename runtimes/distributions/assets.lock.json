@@ -1,0 +1,132 @@
+[
+  {
+    "release": "whisper-b5130-r2",
+    "id": "whisper",
+    "target": "win32-x64",
+    "backend": "cpu",
+    "name": "whisper-bin-x64.zip",
+    "url": "https://github.com/ggml-org/whisper.cpp/releases/download/b5130/whisper-bin-x64.zip",
+    "bytes": 8573270,
+    "sha256": "f9ec6c52a2e949b62ab51fa21d0d497958f9e41c3010c157c4e42932d5316f3c"
+  },
+  {
+    "release": "llama-b11435-r1",
+    "id": "translator",
+    "target": "win32-x64",
+    "backend": "cpu",
+    "name": "llama-b11435-bin-win-cpu-x64.zip",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11435/llama-b11435-bin-win-cpu-x64.zip",
+    "bytes": 19399527,
+    "sha256": "3ed50261147e260d80f5cdc7bdccfa13a94882be560a4438e7a69fa519c93fb7"
+  },
+  {
+    "release": "llama-b11435-r1",
+    "id": "translator",
+    "target": "win32-x64",
+    "backend": "cuda",
+    "name": "llama-b11435-bin-win-cuda-12.4-x64.zip",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11435/llama-b11435-bin-win-cuda-12.4-x64.zip",
+    "bytes": 264473456,
+    "sha256": "18ef0727457adf843fe0e6dc17da296c019c821e56b7bc5fc88db734538fbfb7"
+  },
+  {
+    "release": "llama-b11435-r1",
+    "id": "cuda",
+    "target": "win32-x64",
+    "backend": "cuda",
+    "name": "cudart-llama-bin-win-cuda-12.4-x64.zip",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11435/cudart-llama-bin-win-cuda-12.4-x64.zip",
+    "bytes": 391443627,
+    "sha256": "8c79a9b226de4b3cacfd1f83d24f962d0773be79f1e7b75c6af4ded7e32ae1d6"
+  },
+  {
+    "release": "whisper-b5130-r2",
+    "id": "whisper",
+    "target": "win32-x64",
+    "backend": "cuda",
+    "name": "whisper-cublas-12.4.0-bin-x64.zip",
+    "url": "https://github.com/ggml-org/whisper.cpp/releases/download/b5130/whisper-cublas-12.4.0-bin-x64.zip",
+    "bytes": 674539285,
+    "sha256": "af520ddd034d985b55dfeea3e465ed93653ba2aee1a55e865033edc548c272a7"
+  },
+  {
+    "release": "llama-b11435-r1",
+    "id": "translator",
+    "target": "win32-x64",
+    "backend": "vulkan",
+    "name": "llama-b11435-bin-win-vulkan-x64.zip",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11435/llama-b11435-bin-win-vulkan-x64.zip",
+    "bytes": 33337420,
+    "sha256": "631b029f7df84aa22d1b8c9c929ea3cc505a70ad091f90ac0eabdb7ef0d05563"
+  },
+  {
+    "release": "whisper-b5130-r2",
+    "id": "whisper",
+    "target": "linux-x64",
+    "backend": "cpu",
+    "name": "whisper-bin-ubuntu-x64.tar.gz",
+    "url": "https://github.com/ggml-org/whisper.cpp/releases/download/b5130/whisper-bin-ubuntu-x64.tar.gz",
+    "bytes": 9793438,
+    "sha256": "53e7fd8b5764edad916b8848dd0af6abb1ff1d3b86c899e79c78652412536c32"
+  },
+  {
+    "release": "llama-b11435-r1",
+    "id": "translator",
+    "target": "linux-x64",
+    "backend": "cpu",
+    "name": "llama-b11435-bin-ubuntu-x64.tar.gz",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11435/llama-b11435-bin-ubuntu-x64.tar.gz",
+    "bytes": 17692966,
+    "sha256": "ee617d7af304985e268fbc33bdd8fe44110f1dc2f599ecb27bdf08890e6e6e4c"
+  },
+  {
+    "release": "whisper-b5130-r2",
+    "id": "whisper",
+    "target": "linux-arm64",
+    "backend": "cpu",
+    "name": "whisper-bin-ubuntu-arm64.tar.gz",
+    "url": "https://github.com/ggml-org/whisper.cpp/releases/download/b5130/whisper-bin-ubuntu-arm64.tar.gz",
+    "bytes": 4605905,
+    "sha256": "93532a0e3777f26f041ffa358ee77dd88b1a33a86847c1990745327ff335a5d6"
+  },
+  {
+    "release": "llama-b11435-r1",
+    "id": "translator",
+    "target": "linux-arm64",
+    "backend": "cpu",
+    "name": "llama-b11435-bin-ubuntu-arm64.tar.gz",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11435/llama-b11435-bin-ubuntu-arm64.tar.gz",
+    "bytes": 13680816,
+    "sha256": "5eecb754f61f21fd70799edb1db1d1a6d6cbdf7d1716e8781c99eb4841fd39f8"
+  },
+  {
+    "release": "llama-b11435-r1",
+    "id": "translator",
+    "target": "darwin-x64",
+    "backend": "cpu",
+    "name": "llama-b11435-bin-macos-x64.tar.gz",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11435/llama-b11435-bin-macos-x64.tar.gz",
+    "bytes": 11487091,
+    "sha256": "41ee358ed26b426f2798f459b6b8607416db7e0fa472bae955210f1908627b1b"
+  },
+  {
+    "release": "llama-b11435-r1",
+    "id": "translator",
+    "target": "darwin-arm64",
+    "backend": "cpu",
+    "name": "llama-b11435-bin-macos-arm64.tar.gz",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11435/llama-b11435-bin-macos-arm64.tar.gz",
+    "bytes": 11971075,
+    "sha256": "65f564a94c328dee846a395796d060671fb64f4334a84857c222b2416f039545"
+  },
+  {
+    "release": "silero-v6.2-r1",
+    "id": "vad",
+    "target": "portable",
+    "backend": "common",
+    "name": "ggml-silero-v6.2.0.bin",
+    "url": "https://huggingface.co/ggml-org/whisper-vad/resolve/9ffd54a1e1ee413ddf265af9913beaf518d1639b/ggml-silero-v6.2.0.bin",
+    "bytes": 885098,
+    "sha256": "2aa269b785eeb53a82983a20501ddf7c1d9c48e33ab63a41391ac6c9f7fb6987"
+  }
+]

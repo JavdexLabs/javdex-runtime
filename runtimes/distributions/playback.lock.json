@@ -1,0 +1,47 @@
+[
+  {
+    "target": "darwin-arm64",
+    "name": "Javdex-0.9.0-arm64.dmg",
+    "url": "https://github.com/JavdexLabs/Javdex/releases/download/v0.9.0/Javdex-0.9.0-arm64.dmg",
+    "bytes": 184370115,
+    "sha256": "2ca5c5cb0158cd665403d393c56317330e3e68e90033f9ac53b15c16f0804610",
+    "sourceCommit": "9d48f4fe80df614137a3b67480309aa17e3e6161",
+    "sourceRunId": 39097548024
+  },
+  {
+    "target": "darwin-x64",
+    "name": "Javdex-0.9.0-x64.dmg",
+    "url": "https://github.com/JavdexLabs/Javdex/releases/download/v0.9.0/Javdex-0.9.0-x64.dmg",
+    "bytes": 194075542,
+    "sha256": "68f97fe1f37f5d3fb260f9e9c3bd5ef7086349027a01e024061ce55b8b0a56d5",
+    "sourceCommit": "9d48f4fe80df614137a3b67480309aa17e3e6161",
+    "sourceRunId": 39097548024
+  },
+  {
+    "target": "linux-x64",
+    "name": "Javdex-0.9.0-x86_64.AppImage",
+    "url": "https://github.com/JavdexLabs/Javdex/releases/download/v0.9.0/Javdex-0.9.0-x86_64.AppImage",
+    "bytes": 182880989,
+    "sha256": "3c81825544a86c680d433842f283b7cab85e302595408688fd027301a7dc08e1",
+    "sourceCommit": "9d48f4fe80df614137a3b67480309aa17e3e6161",
+    "sourceRunId": 39097548024
+  },
+  {
+    "target": "sources",
+    "name": "Javdex-Playback-Sources-0.9.0.tar.gz",
+    "url": "https://github.com/JavdexLabs/Javdex/releases/download/v0.9.0/Javdex-Playback-Sources-0.9.0.tar.gz",
+    "bytes": 113830952,
+    "sha256": "bc3a6d34ccde853313970c0ea4c9c6173426d4ac65b5ef4a43a213b7796bbf35",
+    "sourceCommit": "9d48f4fe80df614137a3b67480309aa17e3e6161",
+    "sourceRunId": 39097548024
+  },
+  {
+    "target": "win32-x64",
+    "name": "Javdex-Setup-0.9.0-x64.zip",
+    "url": "https://github.com/JavdexLabs/Javdex/releases/download/v0.9.0/Javdex-Setup-0.9.0-x64.zip",
+    "bytes": 190652923,
+    "sha256": "317774c3767f6e8a4cfec4a04aab0f2fc6955c659bedc5c7f9cc4e81afff9c5a",
+    "sourceCommit": "9d48f4fe80df614137a3b67480309aa17e3e6161",
+    "sourceRunId": 39097548024
+  }
+]
