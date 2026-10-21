@@ -1,6 +1,12 @@
 name: Preserve fixed Javdex dependencies
 on:
   workflow_dispatch:
+    inputs:
+      artifacts_run:
+        description: Optional completed run with all native build jobs successful; identical build inputs are required
+        required: false
+        default: ''
+        type: string
 permissions:
   contents: read
 concurrency:
@@ -16,6 +22,7 @@ jobs:
           node-version: 22
       - run: npm test
   mirror:
+    if: inputs.artifacts_run == ''
     needs: contracts
     runs-on: ubuntu-24.04
     steps:
@@ -31,6 +38,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   mac:
+    if: inputs.artifacts_run == ''
     needs: contracts
     strategy:
       fail-fast: false
@@ -56,6 +64,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   ffmpeg:
+    if: inputs.artifacts_run == ''
     needs: contracts
     strategy:
       fail-fast: false
@@ -93,6 +102,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   playback:
+    if: inputs.artifacts_run == ''
     needs: contracts
     strategy:
       fail-fast: false
@@ -121,12 +131,16 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   stage:
-    needs: [mirror, mac, ffmpeg, playback]
+    if: always() && needs.contracts.result == 'success' && (inputs.artifacts_run != '' || (needs.mirror.result == 'success' && needs.mac.result == 'success' && needs.ffmpeg.result == 'success' && needs.playback.result == 'success'))
+    needs: [contracts, mirror, mac, ffmpeg, playback]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
+      actions: read
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
           node-version: 22
@@ -134,6 +148,9 @@ jobs:
         with:
           path: dist
           merge-multiple: true
+          run-id: ${{ inputs.artifacts_run || github.run_id }}
+          github-token: ${{ github.token }}
       - run: node scripts/publish-distributions.mjs stage
         env:
           GH_TOKEN: ${{ github.token }}
+          JAVDEX_BUILD_RUN: ${{ inputs.artifacts_run }}
