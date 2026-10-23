@@ -14,6 +14,10 @@ jobs:
           node-version: 22
       - run: npm test
   candidate:
+    # GitHub only exposes Draft releases to identities with push access.
+    # This job performs no mutations; final publication remains operator-only.
+    permissions:
+      contents: write
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
