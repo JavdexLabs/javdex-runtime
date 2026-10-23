@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "engine": "whisper",
+  "version": "b5130",
+  "commit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+  "source": {
+    "filename": "whisper-b5130.tar.gz",
+    "url": "https://codeload.github.com/ggml-org/whisper.cpp/tar.gz/927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "bytes": 9357755,
+    "sha256": "41b664fee09e79176ac277b5237debec34f8d74af3c7d71f333f1ec67989ecde"
+  },
+  "cudaVersion": "12.8.1",
+  "cudaArchitectures": [
+    "75-real",
+    "89-real",
+    "75-virtual"
+  ],
+  "cudaTools": {
+    "cuda_nvcc": {
+      "relative_path": "cuda_nvcc/linux-x86_64/cuda_nvcc-linux-x86_64-12.8.93-archive.tar.xz",
+      "sha256": "9961b3484b6b71314063709a4f9529654f96782ad39e72bf1e00f070db8210d3",
+      "md5": "5d7d11d3c8713fe8f19a2228b2b2b4bf",
+      "size": "79015464"
+    },
+    "cuda_cudart": {
+      "relative_path": "cuda_cudart/linux-x86_64/cuda_cudart-linux-x86_64-12.8.90-archive.tar.xz",
+      "sha256": "8d566b5fe745c46842dc16945cf36686227536decd2302c372be86da37faca68",
+      "md5": "4c374fabd7d36cac110ada9aea3c0743",
+      "size": "1354240"
+    },
+    "cuda_cccl": {
+      "relative_path": "cuda_cccl/linux-x86_64/cuda_cccl-linux-x86_64-12.8.90-archive.tar.xz",
+      "sha256": "0740e9e01e4f15e17c5ab8d68bba4f8ec0eb6b84edccba4ac45112d2d2174e4b",
+      "md5": "97f6ad8c8717cc555974d03483200f43",
+      "size": "928524"
+    },
+    "libcublas": {
+      "relative_path": "libcublas/linux-x86_64/libcublas-linux-x86_64-12.8.4.1-archive.tar.xz",
+      "sha256": "21718957c2cf000bacd69d36c95708a2319199e39e056f8b4f0f68e3b9f323bb",
+      "md5": "5d17d588c1d645140127ea8033d9606f",
+      "size": "938651324"
+    }
+  },
+  "vulkanHeaders": {
+    "version": "1.4.310",
+    "licenseUrl": "https://raw.githubusercontent.com/KhronosGroup/Vulkan-Headers/v1.4.310/LICENSES/MIT.txt",
+    "licenseSha256": "1ca3502222d967f3be5751c55f6b7ee735b5383909c3b501495f54b216dbf227"
+  }
+}

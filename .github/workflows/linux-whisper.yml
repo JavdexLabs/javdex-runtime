@@ -1,0 +1,35 @@
+name: Check Linux Whisper candidates
+on:
+  push:
+    branches: [feat/linux-ai-gpu-runtime]
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: 22
+      - run: npm test
+  candidate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version: 22
+      - name: Wait for operator to finish Draft upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in $(seq 1 40); do
+            count=$(gh api 'repos/JavdexLabs/javdex-runtime/releases?per_page=100' --jq '[.[] | select(.tag_name == "whisper-b5130-linux-gpu-r1") | .assets[]] | length')
+            if [ "$count" = "5" ]; then exit 0; fi
+            sleep 15
+          done
+          exit 1
+      - run: node scripts/verify-linux-whisper.mjs "$GITHUB_SHA" out/linux-release
+        env:
+          GH_TOKEN: ${{ github.token }}

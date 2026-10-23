@@ -1,0 +1,21 @@
+[
+  {
+    "name": "whisper-b5130-linux-x64-cuda.tar.gz",
+    "backend": "cuda",
+    "bytes": 652513972,
+    "sha256": "71a3b3f4a3da826c902f0516b2a1aa9d4c4c8fe3f5503bc7bbca2c7743175d54",
+    "archivePrefix": "whisper-b5130-linux-x64-cuda"
+  },
+  {
+    "name": "whisper-b5130-linux-x64-vulkan.tar.gz",
+    "backend": "vulkan",
+    "bytes": 18120772,
+    "sha256": "b4564176a2a20c9f10ba3f30175709f56980d4f55ca4244409218651b4a0f30a",
+    "archivePrefix": "whisper-b5130-linux-x64-vulkan"
+  },
+  {
+    "name": "whisper-b5130-linux-gpu-r1-sources.tar.gz",
+    "bytes": 9358871,
+    "sha256": "8dc1974a1f66967f10047a9af94ce25940f7c516ffa47f786660f69ec652f43e"
+  }
+]
