@@ -1,0 +1,55 @@
+[
+  {
+    "release": "llama-b11435-linux-gpu-r1",
+    "id": "translator",
+    "target": "linux-x64",
+    "backend": "vulkan",
+    "name": "llama-b11435-bin-ubuntu-vulkan-x64.tar.gz",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11435/llama-b11435-bin-ubuntu-vulkan-x64.tar.gz",
+    "source": "https://github.com/ggml-org/llama.cpp/tree/b11435",
+    "bytes": 31636156,
+    "sha256": "e8a9c44c8212c5e7ff1186864080ae49283131c60e7c07753a296faccd3a0324"
+  },
+  {
+    "release": "llama-b11435-linux-gpu-r1",
+    "id": "translator",
+    "target": "linux-x64",
+    "backend": "cuda",
+    "name": "llama-b11435-bin-ubuntu-cuda-12.8-x64.tar.gz",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11435/llama-b11435-bin-ubuntu-cuda-12.8-x64.tar.gz",
+    "source": "https://github.com/ggml-org/llama.cpp/tree/b11435",
+    "bytes": 171652084,
+    "sha256": "251ad225b60da6eab0591567b639dda5e405662589bdaee7bd54a159b8d87fa9"
+  },
+  {
+    "release": "llama-b11435-linux-gpu-r1",
+    "id": "cuda",
+    "target": "linux-x64",
+    "backend": "cuda",
+    "name": "cudart-llama-b11435-bin-ubuntu-cuda-12.8-x64.tar.gz",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11435/cudart-llama-b11435-bin-ubuntu-cuda-12.8-x64.tar.gz",
+    "source": "https://github.com/ggml-org/llama.cpp/tree/b11435",
+    "bytes": 594377810,
+    "sha256": "c14f9b18c0e19623d2fb763e47ca6cd0e409206d462176af8ac0665331b64f74"
+  },
+  {
+    "release": "llama-b11435-linux-gpu-r1",
+    "id": "sources",
+    "target": "sources",
+    "backend": "none",
+    "name": "llama-b11435-upstream.tar.gz",
+    "url": "https://codeload.github.com/ggml-org/llama.cpp/tar.gz/43fe9c64281ef735046adc025e9e7559a1f659a5",
+    "bytes": 37896666,
+    "sha256": "694668b06071d1d142d4e39f42cae657b748d0a226d639bdb2454fb84ae60af0"
+  },
+  {
+    "release": "llama-b11435-linux-gpu-r1",
+    "id": "license",
+    "target": "sources",
+    "backend": "none",
+    "name": "NVIDIA-CUDA-12.8.1-EULA.html",
+    "url": "https://docs.nvidia.com/cuda/archive/12.8.1/eula/index.html",
+    "bytes": 103460,
+    "sha256": "6722d4c310a2ec9ad869ede3371a648fe2cfc2baaf8e1ece2c35e1dccc05752c"
+  }
+]

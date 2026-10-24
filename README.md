@@ -47,4 +47,6 @@ CI 只准备 Draft；维护者在该次完整源码检出执行 `node scripts/pu
 
 来源锁位于 `runtimes/distributions/`。原始上游包不重新打包，保留既有安装摘要身份；CUDA 另附 NVIDIA 条款，不能将引擎 MIT 许可用于 NVIDIA 组件。新 FFmpeg 包的构建身份不同，必须使用新目录及摘要。播放器归档包含签名后的真实二进制，不能与源码包中的 pre-sign 输入摘要混用。
 
+Linux x64 文本 GPU 组件单独使用 `llama-b11435-linux-gpu-r1`，不追加已不可变的 r1 发行。`linux-llama.lock.json` 固定 b11435 CUDA 12.8、Vulkan、CUDA/cuBLAS 三个原始包、完整上游源码和 CUDA 12.8.1 条款。`Preserve fixed Javdex dependencies` 工作流选择 `linux_llama=true`（不传 `artifacts_run`）时只验证这批原始字节并准备独立 Draft；维护者在相同提交执行 `node scripts/publish-distributions.mjs finalize <run ID> --linux-llama`，核对成功 CI、精确来源/附件和不可变设置后公开。此流程不重新执行原生/GPU 推理，不影响旧发行或模型权重。
+
 若原生构建全部成功但 Draft 上传/发布阶段失败，可在手动工作流输入 `artifacts_run` 指定原构建 run。恢复流程逐项确认合同、两个 macOS、三个 FFmpeg、四个播放器目标和镜像任务均成功，并以 git diff 确认全部构建配方、来源锁与许可输入未改变，再下载原产物、重新计算摘要并准备 Draft。失败/取消/跳过的原生目标不能复用。发行清单分别记录原生构建与发布的真实提交、run 和结果；原构建 run 的发布失败不会伪记为成功。最终门禁要求本次发布 CI 成功并重新核验原构建证据。

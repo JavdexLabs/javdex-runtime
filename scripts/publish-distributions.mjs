@@ -5,7 +5,9 @@ import path from 'node:path'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { repository, validateArtifacts, hashFile } from './distribution.mjs'
 import { verifiedBuildRun } from './build-evidence.mjs'
-const releases = ['ffmpeg-8.1.3-r1', 'whisper-b5130-r2', 'llama-b11435-r1', 'silero-v6.2-r1', 'playback-0.41.0-9.0.2-r1']
+import { linuxLlamaRelease, validateLinuxLlamaArtifacts } from './linux-llama.mjs'
+const linuxLlama = process.argv.includes('--linux-llama')
+const releases = linuxLlama ? [linuxLlamaRelease] : ['ffmpeg-8.1.3-r1', 'whisper-b5130-r2', 'llama-b11435-r1', 'silero-v6.2-r1', 'playback-0.41.0-9.0.2-r1']
 const gh = args => execFileSync('gh', args, { encoding: 'utf8', maxBuffer: 8 * 1024 ** 2 })
 const api = endpoint => JSON.parse(gh(['api', '/repos/' + repository + '/' + endpoint]))
 const draftByTag = tag => {
@@ -19,13 +21,16 @@ if (mode === 'stage') {
   assert.equal(process.env.GITHUB_EVENT_NAME, 'workflow_dispatch'); assert.equal(process.env.GITHUB_REPOSITORY, repository)
   assert.equal(process.env.GITHUB_SHA, commit)
   const runId = Number(process.env.GITHUB_RUN_ID); assert.ok(Number.isSafeInteger(runId) && runId > 0)
-  const nativeBuild = process.env.JAVDEX_BUILD_RUN ? verifiedBuildRun(process.env.JAVDEX_BUILD_RUN, commit, api) : { commit, runId }
+  if (linuxLlama) assert.ok(!process.env.JAVDEX_BUILD_RUN, 'Linux llama mirrors require their own verification run')
+  const nativeBuild = linuxLlama ? undefined : process.env.JAVDEX_BUILD_RUN ? verifiedBuildRun(process.env.JAVDEX_BUILD_RUN, commit, api) : { commit, runId }
   const artifacts = []
   for (const name of await fs.readdir('dist')) if (/^(mirrors|mac-.+|ffmpeg-.+|playback-.+)\.json$/.test(name)) artifacts.push(...JSON.parse(await fs.readFile(path.join('dist', name), 'utf8')))
   const expected = { 'ffmpeg-8.1.3-r1': 10, 'whisper-b5130-r2': 10, 'llama-b11435-r1': 10, 'silero-v6.2-r1': 2, 'playback-0.41.0-9.0.2-r1': 5 }
+  expected[linuxLlamaRelease] = 5
   assert.ok(artifacts.every(a => releases.includes(a.release)))
   for (const tag of releases) {
     const entries = artifacts.filter(a => a.release === tag); validateArtifacts(entries); assert.equal(entries.length, expected[tag], `Incomplete ${tag}`)
+    if (linuxLlama) validateLinuxLlamaArtifacts(entries)
     if (tag.startsWith('ffmpeg')) assert.deepEqual(entries.filter(a => a.id === 'ffmpeg').map(a => a.target).sort(), ['darwin-arm64', 'darwin-x64', 'linux-arm64', 'linux-x64', 'win32-x64'])
     if (tag.startsWith('playback')) assert.deepEqual(entries.filter(a => a.id === 'playback').map(a => a.target).sort(), ['darwin-arm64', 'darwin-x64', 'linux-x64', 'win32-x64'])
     const listing = api('releases?per_page=100'); assert.ok(listing.length < 100); assert.ok(!listing.some(r => r.tag_name === tag), 'Release already exists')
@@ -37,7 +42,9 @@ if (mode === 'stage') {
     await fs.writeFile(path.join(output, 'release.json'), JSON.stringify(manifest, null, 2) + '\n')
     await fs.writeFile(path.join(output, 'SHA256SUMS.txt'), entries.map(a => `${a.sha256}  ${a.name}\n`).join(''))
     const body = path.join(output, 'notes.txt')
-    await fs.writeFile(body, `${tag}\n\nFixed distribution for Javdex. Publication source: ${commit}\nNative build source: ${nativeBuild.commit}\nNative build run: ${nativeBuild.runId}\nCI: https://github.com/${repository}/actions/runs/${runId}\n\nSee release.json for per-artifact source, digests and verification scope. Original mirrors are byte-identical; native execution is not re-tested for mirrors or historical playback archives. New FFmpeg builds passed native CLI and WAV conversion; macOS Whisper passed native Kotoba/VAD CPU smoke. GPU inference: NOT TESTED. macOS CLI signing is ad-hoc, not Developer ID notarization.\n\nThird-party licenses remain their own. CUDA binaries retain NVIDIA terms; engine MIT licensing does not cover NVIDIA components. Models other than the small VAD auxiliary are not distributed. No automatic cleanup.\n`)
+    await fs.writeFile(body, linuxLlama
+      ? `${tag}\n\nLinux x64 llama.cpp b11435 CUDA 12.8, Vulkan and CUDA/cuBLAS dependency mirrors for Javdex. Original upstream bytes, pinned sizes and SHA-256 identities are preserved. Includes upstream source at 43fe9c64281ef735046adc025e9e7559a1f659a5 and NVIDIA CUDA 12.8.1 terms.\n\nPublication source: ${commit}\nCI: https://github.com/${repository}/actions/runs/${runId}\n\nCI verifies byte identity only. Native execution is not re-tested; GPU inference: NOT TESTED. Engine MIT licensing does not cover NVIDIA components. No models, drivers or Javdex application packages. Existing releases are unchanged. No automatic cleanup.\n`
+      : `${tag}\n\nFixed distribution for Javdex. Publication source: ${commit}\nNative build source: ${nativeBuild.commit}\nNative build run: ${nativeBuild.runId}\nCI: https://github.com/${repository}/actions/runs/${runId}\n\nSee release.json for per-artifact source, digests and verification scope. Original mirrors are byte-identical; native execution is not re-tested for mirrors or historical playback archives. New FFmpeg builds passed native CLI and WAV conversion; macOS Whisper passed native Kotoba/VAD CPU smoke. GPU inference: NOT TESTED. macOS CLI signing is ad-hoc, not Developer ID notarization.\n\nThird-party licenses remain their own. CUDA binaries retain NVIDIA terms; engine MIT licensing does not cover NVIDIA components. Models other than the small VAD auxiliary are not distributed. No automatic cleanup.\n`)
     gh(['release', 'create', tag, '--repo', repository, '--target', commit, '--draft', '--title', tag, '--notes-file', body])
     for (const file of [...entries.map(a => path.resolve('dist', a.name)), path.join(output, 'release.json'), path.join(output, 'SHA256SUMS.txt')]) gh(['release', 'upload', tag, file, '--repo', repository])
     const draft = draftByTag(tag)
@@ -61,6 +68,12 @@ if (mode === 'stage') {
     const file = draft.assets.find(a => a.name === 'release.json'); assert.ok(file)
     const manifest = JSON.parse(gh(['api', `/repos/${repository}/releases/assets/${file.id}`, '-H', 'Accept: application/octet-stream']))
     assert.equal(manifest.commit, commit); assert.equal(manifest.runId, Number(runId)); assert.equal(manifest.version, tag); validateArtifacts(manifest.artifacts)
+    if (linuxLlama) {
+      assert.equal(manifest.repository, repository); assert.equal(manifest.formatVersion, 1)
+      assert.equal(manifest.nativeBuild, undefined)
+      validateLinuxLlamaArtifacts(manifest.artifacts)
+      for (const a of manifest.artifacts) assert.equal(a.url, `https://github.com/${repository}/releases/download/${tag}/${a.name}`)
+    }
     if (nativeBuild) assert.deepEqual(nativeBuild, manifest.nativeBuild)
     nativeBuild = manifest.nativeBuild
     const expected = [...manifest.artifacts, { name: 'release.json' }, { name: 'SHA256SUMS.txt' }]
@@ -68,7 +81,10 @@ if (mode === 'stage') {
     for (const a of manifest.artifacts) { const f = draft.assets.find(f => f.name === a.name); assert.equal(f.size, a.bytes); assert.equal(f.digest, 'sha256:' + a.sha256) }
     drafts.push(draft)
   }
-  if (nativeBuild.runId !== Number(runId)) {
+  if (linuxLlama) {
+    for (const name of ['contracts', 'mirror', 'stage']) assert.equal(jobs.jobs.filter(j => j.name === name && j.conclusion === 'success').length, 1)
+    assert.ok(jobs.jobs.filter(j => !['contracts', 'mirror', 'stage'].includes(j.name)).every(j => j.conclusion === 'skipped'))
+  } else if (nativeBuild.runId !== Number(runId)) {
     assert.deepEqual(verifiedBuildRun(nativeBuild.runId, commit, api), nativeBuild)
     assert.ok(jobs.jobs.filter(j => !['contracts', 'stage'].includes(j.name)).every(j => j.conclusion === 'skipped'))
   } else { assert.ok(jobs.total_count >= 10); assert.ok(jobs.jobs.every(j => j.conclusion === 'success')) }

@@ -2,6 +2,11 @@ name: Preserve fixed Javdex dependencies
 on:
   workflow_dispatch:
     inputs:
+      linux_llama:
+        description: Preserve only Linux x64 llama b11435 GPU mirrors in a new independent release
+        required: false
+        default: false
+        type: boolean
       artifacts_run:
         description: Optional completed run with all native build jobs successful; identical build inputs are required
         required: false
@@ -30,7 +35,7 @@ jobs:
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
           node-version: 22
-      - run: node scripts/mirror.mjs
+      - run: node scripts/mirror.mjs ${{ inputs.linux_llama && '--linux-llama' || '' }}
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: mirrors
@@ -38,7 +43,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   mac:
-    if: inputs.artifacts_run == ''
+    if: inputs.artifacts_run == '' && !inputs.linux_llama
     needs: contracts
     strategy:
       fail-fast: false
@@ -64,7 +69,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   ffmpeg:
-    if: inputs.artifacts_run == ''
+    if: inputs.artifacts_run == '' && !inputs.linux_llama
     needs: contracts
     strategy:
       fail-fast: false
@@ -102,7 +107,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   playback:
-    if: inputs.artifacts_run == ''
+    if: inputs.artifacts_run == '' && !inputs.linux_llama
     needs: contracts
     strategy:
       fail-fast: false
@@ -131,7 +136,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   stage:
-    if: always() && needs.contracts.result == 'success' && (inputs.artifacts_run != '' || (needs.mirror.result == 'success' && needs.mac.result == 'success' && needs.ffmpeg.result == 'success' && needs.playback.result == 'success'))
+    if: always() && needs.contracts.result == 'success' && ((inputs.linux_llama && inputs.artifacts_run == '' && needs.mirror.result == 'success') || (!inputs.linux_llama && (inputs.artifacts_run != '' || (needs.mirror.result == 'success' && needs.mac.result == 'success' && needs.ffmpeg.result == 'success' && needs.playback.result == 'success'))))
     needs: [contracts, mirror, mac, ffmpeg, playback]
     runs-on: ubuntu-24.04
     permissions:
@@ -150,7 +155,7 @@ jobs:
           merge-multiple: true
           run-id: ${{ inputs.artifacts_run || github.run_id }}
           github-token: ${{ github.token }}
-      - run: node scripts/publish-distributions.mjs stage
+      - run: node scripts/publish-distributions.mjs stage ${{ inputs.linux_llama && '--linux-llama' || '' }}
         env:
           GH_TOKEN: ${{ github.token }}
           JAVDEX_BUILD_RUN: ${{ inputs.artifacts_run }}
